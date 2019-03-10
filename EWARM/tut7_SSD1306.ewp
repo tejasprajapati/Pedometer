@@ -1055,6 +1055,9 @@
                 <name>$PROJ_DIR$\..\Src\fonts.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\Src\lis2ds12_reg.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\Src\main.c</name>
             </file>
             <file>

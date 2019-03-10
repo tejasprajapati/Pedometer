@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "C:\Users\Tejas\Downloads\Compressed\tut7 - SSD1306\EWARM\settings\tut7_SSD1306.tut7_SSD1306.general.xcl" --backend -f "C:\Users\Tejas\Downloads\Compressed\tut7 - SSD1306\EWARM\settings\tut7_SSD1306.tut7_SSD1306.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\Git_Local_Repo\UpWork Project\Pedometer\EWARM\settings\tut7_SSD1306.tut7_SSD1306.general.xcl" --backend -f "D:\Git_Local_Repo\UpWork Project\Pedometer\EWARM\settings\tut7_SSD1306.tut7_SSD1306.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "C:\Users\Tejas\Downloads\Compressed\tut7 - SSD1306\EWARM\settings\tut7_SSD1306.tut7_SSD1306.general.xcl" "--debug_file=%~1" --backend -f "C:\Users\Tejas\Downloads\Compressed\tut7 - SSD1306\EWARM\settings\tut7_SSD1306.tut7_SSD1306.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\Git_Local_Repo\UpWork Project\Pedometer\EWARM\settings\tut7_SSD1306.tut7_SSD1306.general.xcl" "--debug_file=%~1" --backend -f "D:\Git_Local_Repo\UpWork Project\Pedometer\EWARM\settings\tut7_SSD1306.tut7_SSD1306.driver.xcl" 
 
 @echo off 
 :end
