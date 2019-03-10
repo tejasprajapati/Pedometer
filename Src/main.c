@@ -37,6 +37,7 @@
 /* USER CODE BEGIN Includes */
 #include "fonts.h"
 #include "ssd1306.h"
+#include "lis2ds12_reg.h"
 #include <string.h>
 /* USER CODE END Includes */
 
@@ -57,6 +58,16 @@ float Humidity;
 //variables for LCD
 char lcd_buf[25];
 int i;
+
+static axis3bit16_t data_raw_acceleration;
+static axis1bit16_t data_raw_temperature;
+static uint8_t magnitude_8bit;
+static float acceleration_mg[3];
+static float temperature_degC;
+static uint8_t whoamI, rst;
+static uint8_t tx_buffer[1000];
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,6 +76,11 @@ void Error_Handler(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_ADC_Init(void);
+static int32_t platform_write(void *handle, uint8_t Reg, uint8_t *Bufp,
+                              uint16_t len);
+static int32_t platform_read(void *handle, uint8_t Reg, uint8_t *Bufp,
+                              uint16_t len);
+void lis2ds12_8bit_module(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -97,53 +113,22 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	//Init LCD
+        lis2ds12_8bit_module();                                                 /* This function has a while loop inside need some work around to make it work
+                                                                                 * along side the OLED
+                                                                                 */
 	ssd1306_Init();
 	HAL_Delay(50);
-	
-	//Config the HDC1080 to perform acquisition separately
-	HAL_Delay(15);
-	buffer[0]=0x02; //Pointer
-	buffer[1]=0;	//MSB byte
-	buffer[3]=0; 	//LSB byte
-	HAL_I2C_Master_Transmit(&hi2c1,0x40<<1,buffer,3,100);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		//Trigger Temperature measurement
-		buffer[0]=0x00;
-		HAL_I2C_Master_Transmit(&hi2c1,0x40<<1,buffer,1,100);
-		
-		HAL_Delay(20);
-		
-		HAL_I2C_Master_Receive(&hi2c1,0x40<<1,buffer,2,100);
-		//buffer[0] : MSB data
-		//buffer[1] : LSB data
-		
-		rawT = buffer[0]<<8 | buffer[1];	//combine 2 8-bit into 1 16bit
-		
-		Temperature = ((float)rawT/65536)*165.0 -40.0;
-
-		//Trigger Humidity measurement
-		buffer[0]=0x01;
-		HAL_I2C_Master_Transmit(&hi2c1,0x40<<1,buffer,1,100);
-		
-		HAL_Delay(20);
-		
-		HAL_I2C_Master_Receive(&hi2c1,0x40<<1,buffer,2,100);
-		//buffer[0] : MSB data
-		//buffer[1] : LSB data
-		
-		rawH = buffer[0]<<8 | buffer[1];	//combine 2 8-bit into 1 16bit
-		
-		Humidity = ((float)rawH/65536)*100.0;
-		
-                
                 Temperature = 25;
                 Humidity = 90;
 		
@@ -389,6 +374,117 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void lis2ds12_8bit_module(void)
+{
+  uint8_t command;
+  HAL_Delay(1000);
+  /*
+   *  Initialize mems driver interface.
+   */
+  lis2ds12_ctx_t dev_ctx;
+
+  dev_ctx.write_reg = platform_write;
+  dev_ctx.read_reg = platform_read;
+  dev_ctx.handle = &hi2c1;
+
+  /* Check device ID. */
+  whoamI = 0;
+  lis2ds12_device_id_get(&dev_ctx, &whoamI);
+  if ( whoamI != LIS2DS12_ID )
+    while(1); /*manage here device not found */
+
+  /* Restore default configuration. */
+  lis2ds12_reset_set(&dev_ctx, PROPERTY_ENABLE);
+  do {
+    lis2ds12_reset_get(&dev_ctx, &rst);
+  } while (rst);
+
+  /* Enable Block Data Update. */
+  lis2ds12_block_data_update_set(&dev_ctx, PROPERTY_ENABLE);
+
+  /* Set full scale. */
+  lis2ds12_xl_full_scale_set(&dev_ctx, LIS2DS12_4g);
+
+  /* Enable pedometer algorithm. */
+  lis2ds12_pedo_sens_set(&dev_ctx, PROPERTY_ENABLE);
+//  lis2ds12_motion_sens_set(&dev_ctx, PROPERTY_ENABLE);
+//  lis2ds12_tilt_sens_set(&dev_ctx, PROPERTY_ENABLE);
+
+  /* Set Output Data Rate. */
+  lis2ds12_odr_t val;
+  lis2ds12_xl_data_rate_set(&dev_ctx, LIS2DS12_XL_ODR_1Hz_LP);
+  lis2ds12_xl_data_rate_get(&dev_ctx, &val);
+
+  while(1)
+  {
+    /*
+     * Read output only if new value is available.
+     */
+    lis2ds12_reg_t reg;
+    lis2ds12_status_reg_get(&dev_ctx, &reg.status);
+
+    //lis2ds12_read_reg(&dev_ctx, LIS2DS12_FUNC_SRC, &reg.byte, 1);
+
+    if (reg.status.drdy)
+    //if (reg.func_src.module_ready)
+    {
+      /*
+       * Read acceleration data.
+       */
+      lis2ds12_acceleration_module_raw_get(&dev_ctx, &magnitude_8bit);
+
+      memset(data_raw_acceleration.u8bit, 0x00, 3*sizeof(int16_t));
+      lis2ds12_acceleration_raw_get(&dev_ctx, data_raw_acceleration.u8bit);
+      acceleration_mg[0] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[0]);
+      acceleration_mg[1] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[1]);
+      acceleration_mg[2] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[2]);
+    }
+  }
+}
+
+
+/**
+  * @brief  Write generic device register
+  *
+  * @param  lis2dw12_ctx_t *ctx: read / write interface definitions
+  * @param  uint8_t reg: register to write
+  * @param  uint8_t* data: pointer to data to write in register reg
+  * @param  uint16_t len: number of consecutive register to write
+  *
+*/
+static int32_t platform_write(void *handle, uint8_t Reg, uint8_t *Bufp,
+                              uint16_t len)
+{
+  if (handle == &hi2c1)
+  {
+    HAL_I2C_Mem_Write(handle, LIS2DS12_I2C_ADD_H, Reg,
+                      I2C_MEMADD_SIZE_8BIT, Bufp, len, 1000);
+  }
+  return 0;
+}
+
+/**
+  * @brief  Write generic device register
+  *
+  * @param  lis2dw12_ctx_t *ctx: read / write interface definitions
+  * @param  uint8_t reg: register to write
+  * @param  uint8_t* data: pointer to data to write in register reg
+  * @param  uint16_t len: number of consecutive register to write
+  *
+  *
+  */
+static int32_t platform_read(void *handle, uint8_t Reg, uint8_t *Bufp,
+                             uint16_t len)
+{
+  if (handle == &hi2c1)
+  {
+      HAL_I2C_Mem_Read(handle, LIS2DS12_I2C_ADD_H, Reg,
+                       I2C_MEMADD_SIZE_8BIT, Bufp, len, 1000);
+  }
+  return 0;
+}
+
 
 /* USER CODE END 4 */
 

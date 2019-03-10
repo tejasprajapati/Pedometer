@@ -260,6 +260,10 @@
 /** @defgroup I2C_Private_Define I2C Private Define
   * @{
   */
+ 
+#define TEST_SENSOR
+#define SENSE_DELAY 50
+ 
 #define TIMING_CLEAR_MASK   (0xF0FFFFFFU)  /*!< I2C TIMING clear register Mask */
 #define I2C_TIMEOUT_ADDR    (10000U)       /*!< 10 s  */
 #define I2C_TIMEOUT_BUSY    (25U)          /*!< 25 ms */
@@ -1919,6 +1923,10 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     /* Send Slave Address and Memory Address */
     if(I2C_RequestMemoryRead(hi2c, DevAddress, MemAddress, MemAddSize, Timeout, tickstart) != HAL_OK)
     {
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
       if(hi2c->ErrorCode == HAL_I2C_ERROR_AF)
       {
         /* Process Unlocked */
@@ -1935,30 +1943,54 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
 
     /* Send Slave Address */
     /* Set NBYTES to write and reload if hi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     if(hi2c->XferCount > MAX_NBYTE_SIZE)
     {
       hi2c->XferSize = MAX_NBYTE_SIZE;
       I2C_TransferConfig(hi2c, DevAddress, hi2c->XferSize, I2C_RELOAD_MODE, I2C_GENERATE_START_READ);
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     }
     else
     {
       hi2c->XferSize = hi2c->XferCount;
       I2C_TransferConfig(hi2c, DevAddress, hi2c->XferSize, I2C_AUTOEND_MODE, I2C_GENERATE_START_READ);
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     }
 
     do
     {
       /* Wait until RXNE flag is set */
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
       if(I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_RXNE, RESET, Timeout, tickstart) != HAL_OK)
       {
         return HAL_TIMEOUT;
       }
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
       /* Read data from RXDR */
       (*hi2c->pBuffPtr++) = hi2c->Instance->RXDR;
       hi2c->XferSize--;
       hi2c->XferCount--;
 
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
       if((hi2c->XferSize == 0U) && (hi2c->XferCount != 0U))
       {
         /* Wait until TCR flag is set */
@@ -1966,6 +1998,10 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
         {
           return HAL_TIMEOUT;
         }
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
         if(hi2c->XferCount > MAX_NBYTE_SIZE)
         {
@@ -1982,6 +2018,10 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
 
     /* No need to Check TC flag, with AUTOEND mode the stop is automatically generated */
     /* Wait until STOPF flag is reset */ 
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     if(I2C_WaitOnSTOPFlagUntilTimeout(hi2c, Timeout, tickstart) != HAL_OK)
     {
       if(hi2c->ErrorCode == HAL_I2C_ERROR_AF)
@@ -1993,18 +2033,46 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
         return HAL_TIMEOUT;
       }
     }
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
     /* Clear STOP Flag */
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
     /* Clear Configuration Register 2 */
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     I2C_RESET_CR2(hi2c);
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
     hi2c->State = HAL_I2C_STATE_READY;
     hi2c->Mode  = HAL_I2C_MODE_NONE;
 
     /* Process Unlocked */
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
     __HAL_UNLOCK(hi2c);
+#ifdef TEST_SENSOR
+      if(DevAddress == 0x3A)
+        HAL_Delay(SENSE_DELAY);
+#endif
 
     return HAL_OK;
   }
