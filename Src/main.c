@@ -113,9 +113,10 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	//Init LCD
-        lis2ds12_8bit_module();                                                 /* This function has a while loop inside need some work around to make it work
-                                                                                 * along side the OLED
-                                                                                 */
+//        ssd1306_Init();
+//        lis2ds12_8bit_module();                                                 /* This function has a while loop inside need some work around to make it work
+//                                                                                 * along side the OLED
+//                                                                                 */
 	ssd1306_Init();
 	HAL_Delay(50);
 
@@ -138,13 +139,7 @@ int main(void)
 		ssd1306_WriteString(lcd_buf,Font_7x10,White);
 		
 		sprintf(lcd_buf,"Humidity:%.1f",Humidity); //convert humidity to string
-		ssd1306_SetCursor(0,15);	//set cursor position x=0,y=15
-		ssd1306_WriteString(lcd_buf,Font_7x10,White);
-		
-                ssd1306_SetCursor(0,30);	//set cursor position x=0,y=15
-		ssd1306_WriteString(lcd_buf,Font_7x10,White);
-
-                ssd1306_SetCursor(0,45);	//set cursor position x=0,y=15
+		ssd1306_SetCursor(0,10);	//set cursor position x=0,y=15
 		ssd1306_WriteString(lcd_buf,Font_7x10,White);
                 
 		ssd1306_UpdateScreen();	//Update the LCD
