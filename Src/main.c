@@ -61,6 +61,7 @@ int i;
 
 static axis3bit16_t data_raw_acceleration;
 static axis1bit16_t data_raw_temperature;
+static stepcountbit16_t data_step_count;
 static uint8_t magnitude_8bit;
 static float acceleration_mg[3];
 static float temperature_degC;
@@ -113,10 +114,11 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	//Init LCD
-//        ssd1306_Init();
-//        lis2ds12_8bit_module();                                                 /* This function has a while loop inside need some work around to make it work
-//                                                                                 * along side the OLED
-//                                                                                 */
+        ssd1306_Init();
+        lis2ds12_8bit_module();
+		while(1);	 //for temporary testing only					/* This function has a while loop inside need some work around to make it work
+//                                                                   * along side the OLED
+//                                                                   */
 	ssd1306_Init();
 	HAL_Delay(50);
 
@@ -424,9 +426,23 @@ void lis2ds12_8bit_module(void)
     if (reg.status.drdy)
     //if (reg.func_src.module_ready)
     {
+		
+		reg.status.drdy = 0;
+	  /* Read Step count data. */
+	  
+	  memset(data_step_count.u8bit, 0x00, sizeof(int16_t));  //Clearing the variable.
+	  lis2ds12_number_of_steps_get(&dev_ctx,data_step_count.u8bit);   // reading the register H/L of 16 bit.
+	  
+	  sprintf(lcd_buf,"%d",data_step_count.i16bit); //convert stepcount to string
+	  ssd1306_SetCursor(0,0);	//set cursor position x=0, y=0
+	  ssd1306_WriteString(lcd_buf,Font_7x10,White);
+	  
+	  ssd1306_UpdateScreen();	//Update the LCD
+      HAL_Delay(500);  // remove if not needed. 
+	  
       /*
        * Read acceleration data.
-       */
+       *
       lis2ds12_acceleration_module_raw_get(&dev_ctx, &magnitude_8bit);
 
       memset(data_raw_acceleration.u8bit, 0x00, 3*sizeof(int16_t));
@@ -434,7 +450,8 @@ void lis2ds12_8bit_module(void)
       acceleration_mg[0] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[0]);
       acceleration_mg[1] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[1]);
       acceleration_mg[2] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[2]);
-    }
+      */
+	}
   }
 }
 

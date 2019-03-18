@@ -80,6 +80,11 @@ typedef union{
   uint8_t u8bit[4];
 } axis1bit32_t;
 
+typedef union{
+  int16_t i16bit;
+  uint8_t u8bit[2];
+}stepcountbit16_t;
+
 typedef struct{
   uint8_t bit0       : 1;
   uint8_t bit1       : 1;
