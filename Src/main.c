@@ -59,14 +59,14 @@ float Humidity;
 char lcd_buf[25];
 int i;
 
-static axis3bit16_t data_raw_acceleration;
-static axis1bit16_t data_raw_temperature;
+//static axis3bit16_t data_raw_acceleration;
+//static axis1bit16_t data_raw_temperature;
 static stepcountbit16_t data_step_count;
-static uint8_t magnitude_8bit;
-static float acceleration_mg[3];
-static float temperature_degC;
+//static uint8_t magnitude_8bit;
+//static float acceleration_mg[3];
+//static float temperature_degC;
 static uint8_t whoamI, rst;
-static uint8_t tx_buffer[1000];
+//static uint8_t tx_buffer[1000];
 
 
 /* USER CODE END PV */
@@ -116,9 +116,9 @@ int main(void)
 	//Init LCD
         ssd1306_Init();
         lis2ds12_8bit_module();
-		while(1);	 //for temporary testing only					/* This function has a while loop inside need some work around to make it work
-//                                                                   * along side the OLED
-//                                                                   */
+        while(1);	 //for temporary testing only	                        /* This function has a while loop inside need some work around to make it work
+//                                                                              * along side the OLED
+//                                                                              */
 	ssd1306_Init();
 	HAL_Delay(50);
 
@@ -374,7 +374,7 @@ static void MX_GPIO_Init(void)
 
 void lis2ds12_8bit_module(void)
 {
-  uint8_t command;
+//  uint8_t command;
   HAL_Delay(1000);
   /*
    *  Initialize mems driver interface.
@@ -426,19 +426,19 @@ void lis2ds12_8bit_module(void)
     if (reg.status.drdy)
     //if (reg.func_src.module_ready)
     {
-		
-		reg.status.drdy = 0;
-	  /* Read Step count data. */
-	  
-	  memset(data_step_count.u8bit, 0x00, sizeof(int16_t));  //Clearing the variable.
-	  lis2ds12_number_of_steps_get(&dev_ctx,data_step_count.u8bit);   // reading the register H/L of 16 bit.
-	  
-	  sprintf(lcd_buf,"%d",data_step_count.i16bit); //convert stepcount to string
-	  ssd1306_SetCursor(0,0);	//set cursor position x=0, y=0
-	  ssd1306_WriteString(lcd_buf,Font_7x10,White);
-	  
-	  ssd1306_UpdateScreen();	//Update the LCD
-      HAL_Delay(500);  // remove if not needed. 
+
+        reg.status.drdy = 0;
+        /* Read Step count data. */
+
+        memset(data_step_count.u8bit, 0x00, sizeof(int16_t));  //Clearing the variable.
+        lis2ds12_number_of_steps_get(&dev_ctx,data_step_count.u8bit);   // reading the register H/L of 16 bit.
+
+        sprintf(lcd_buf,"%d",data_step_count.i16bit); //convert stepcount to string
+        ssd1306_SetCursor(0,0);	//set cursor position x=0, y=0
+        ssd1306_WriteString(lcd_buf,Font_7x10,White);
+
+        ssd1306_UpdateScreen();	//Update the LCD
+//        HAL_Delay(5);  // remove if not needed.
 	  
       /*
        * Read acceleration data.
@@ -451,7 +451,7 @@ void lis2ds12_8bit_module(void)
       acceleration_mg[1] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[1]);
       acceleration_mg[2] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[2]);
       */
-	}
+    }
   }
 }
 
