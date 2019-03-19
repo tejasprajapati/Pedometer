@@ -114,40 +114,19 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	//Init LCD
-        ssd1306_Init();
-        lis2ds12_8bit_module();
-        while(1);	 //for temporary testing only	                        /* This function has a while loop inside need some work around to make it work
-//                                                                              * along side the OLED
-//                                                                              */
-	ssd1306_Init();
-	HAL_Delay(50);
-
+  ssd1306_Init();
+  lis2ds12_8bit_module();                                                       /* This function has a while loop inside need some work around to make it work
+                                                                                * along side the OLED
+                                                                                */
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-                Temperature = 25;
-                Humidity = 90;
-		
-		//Display temperature and humidity on LCD
-		sprintf(lcd_buf,"Temperature:%.1f",Temperature); //convert temperature to string
-		ssd1306_SetCursor(0,0);	//set cursor position x=0, y=0
-		ssd1306_WriteString(lcd_buf,Font_7x10,White);
-		
-		sprintf(lcd_buf,"Humidity:%.1f",Humidity); //convert humidity to string
-		ssd1306_SetCursor(0,10);	//set cursor position x=0,y=15
-		ssd1306_WriteString(lcd_buf,Font_7x10,White);
-                
-		ssd1306_UpdateScreen();	//Update the LCD
-		//End of LCD display
-		
-		HAL_Delay(100);
   }
   /* USER CODE END 3 */
 
@@ -438,7 +417,7 @@ void lis2ds12_8bit_module(void)
         ssd1306_WriteString(lcd_buf,Font_7x10,White);
 
         ssd1306_UpdateScreen();	//Update the LCD
-//        HAL_Delay(5);  // remove if not needed.
+        HAL_Delay(50);  // remove if not needed.
 	  
       /*
        * Read acceleration data.
