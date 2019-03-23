@@ -51,6 +51,7 @@ I2C_HandleTypeDef hi2c1;
 unsigned char buffer[5];
 
 unsigned int rawT, rawH;
+uint8_t rst_cnt;
 
 float Temperature;
 float Humidity;
@@ -308,7 +309,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
@@ -347,13 +348,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
 
 void lis2ds12_8bit_module(void)
 {
-//  uint8_t command;
+  uint8_t reset_reg = 0;
+  uint8_t try_count = 0;
+  
   HAL_Delay(1000);
   /*
    *  Initialize mems driver interface.
@@ -431,6 +438,14 @@ void lis2ds12_8bit_module(void)
       acceleration_mg[2] = LIS2DS12_FROM_FS_2g_TO_mg( data_raw_acceleration.i16bit[2]);
       */
     }
+    if (rst_cnt) {
+      rst_cnt = 0;
+      do {
+        lis2ds12_pedo_step_reset_set(&dev_ctx,1);
+        lis2ds12_pedo_step_reset_get(&dev_ctx, &reset_reg);
+              
+      } while(reset_reg!=1 && try_count++<3);
+    }
   }
 }
 
@@ -476,6 +491,17 @@ static int32_t platform_read(void *handle, uint8_t Reg, uint8_t *Bufp,
   return 0;
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == B1_Pin) {
+    if(HAL_GPIO_ReadPin(GPIOA, B1_Pin) == 0) {
+      rst_cnt = 1;
+      HAL_GPIO_TogglePin(GPIOC, LD4_Pin);
+    }
+  }
+  else
+    __NOP();
+}
 
 /* USER CODE END 4 */
 

@@ -1923,7 +1923,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     /* Send Slave Address and Memory Address */
     if(I2C_RequestMemoryRead(hi2c, DevAddress, MemAddress, MemAddSize, Timeout, tickstart) != HAL_OK)
     {
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
@@ -1943,7 +1943,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
 
     /* Send Slave Address */
     /* Set NBYTES to write and reload if hi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
@@ -1951,7 +1951,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     {
       hi2c->XferSize = MAX_NBYTE_SIZE;
       I2C_TransferConfig(hi2c, DevAddress, hi2c->XferSize, I2C_RELOAD_MODE, I2C_GENERATE_START_READ);
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
@@ -1960,7 +1960,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     {
       hi2c->XferSize = hi2c->XferCount;
       I2C_TransferConfig(hi2c, DevAddress, hi2c->XferSize, I2C_AUTOEND_MODE, I2C_GENERATE_START_READ);
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
@@ -1969,7 +1969,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     do
     {
       /* Wait until RXNE flag is set */
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
@@ -1977,7 +1977,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
       {
         return HAL_TIMEOUT;
       }
-#ifndef TEST_SENSOR
+#ifdef TEST_SENSOR
       if(DevAddress == 0x3A)
         HAL_Delay(SENSE_DELAY);
 #endif
